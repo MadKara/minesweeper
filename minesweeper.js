@@ -1,4 +1,4 @@
-const TILE_STATUSES = {
+export const TILE_STATUSES = {
     HIDDEN: 'hidden',
     MINE: 'mine',
     NUMBER: 'number',
@@ -45,6 +45,26 @@ export function markTile(tile){
     }
 }
 
+export function revealTile(board, tile){
+    if(tile.status !== TILE_STATUSES.HIDDEN){
+        return
+    }
+    if(tile.mine){
+        tile.status = TILE_STATUSES.MINE
+        return
+    }
+    tile.status = TILE_STATUSES.NUMBER
+
+    const nearbyCountTiles = nearbyTiles(board, tile)
+    const mines = nearbyCountTiles.filter(t => t.mine)
+
+    if(mines.length === 0) {
+        nearbyCountTiles.forEach(revealTile.bind(null, board))
+    } else {
+        tile.element.textContent = mines.length
+    }
+}
+
 function getMinesPosition(boardSize, numberOfMines){
     const positions = []
 
@@ -68,4 +88,16 @@ function randomPosition(size){
 
 function positionMatch(a, b){
     return a.x === b.x && a.y === b.y
+}
+
+function nearbyTiles(board, { x, y}){
+    const tiles = []
+
+    for(let xOffset = -1; xOffset <= 1; xOffset++){
+        for(let yOffset = -1; yOffset <= 1; yOffset++){
+            const tile = board[x + xOffset]?.[y + yOffset]
+            if(tile) tiles.push(tile)
+        }
+    }
+    return tiles
 }
